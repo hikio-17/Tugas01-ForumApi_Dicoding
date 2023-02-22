@@ -21,6 +21,7 @@
        "class-methods-use-this": "off",
        "array-callback-return": "off",
        "import/no-extraneous-dependencies": "off",
-       "no-unused-vars":"off"
+       "no-unused-vars":"off",
+       "no-undef": "off"
    }
 }

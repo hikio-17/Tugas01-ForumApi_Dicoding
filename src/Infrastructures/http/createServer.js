@@ -14,6 +14,7 @@ const createServer = async (container) => {
     port: process.env.PORT,
   });
 
+  // registrasi plugin eksternal
   await server.register([
     {
       plugin: Jwt,
@@ -31,7 +32,7 @@ const createServer = async (container) => {
     validate: (artifacts) => ({
       isValid: true,
       credentials: {
-        id: artifacts.decoded.payload.id
+        id: artifacts.decoded.payload.id,
       },
     }),
   });
@@ -47,6 +48,7 @@ const createServer = async (container) => {
     },
     {
       plugin: threads,
+      options: { container },
     },
   ]);
 
