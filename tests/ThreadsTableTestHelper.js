@@ -1,10 +1,11 @@
+/* istanbul ignore file */
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const ThreadsTableTestHelper = {
   async addThread({
     id = 'thread-123',
-    title = 'my title',
-    body = 'body content',
+    title = 'ini title',
+    body = 'ini body',
     date = new Date().toISOString(),
     owner = 'user-123',
   }) {
@@ -29,7 +30,7 @@ const ThreadsTableTestHelper = {
   },
 
   async cleanTable() {
-    await pool.query('TRUNCATE threads');
+    await pool.query('DELETE FROM threads WHERE 1=1');
   },
 };
 
