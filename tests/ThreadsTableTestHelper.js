@@ -3,7 +3,7 @@ const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const ThreadsTableTestHelper = {
   async addThread({
-    id = 'thread-123',
+    id = 'thread-1234',
     title = 'ini title',
     body = 'ini body',
     date = new Date().toISOString(),
