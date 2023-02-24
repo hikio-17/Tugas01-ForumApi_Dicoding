@@ -14,7 +14,7 @@ describe('ThreadsRepository interface', () => {
     const threadsRepository = new ThreadRepository();
 
     // Action and Assert
-    expect(() => threadsRepository.addComment({})).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    expect(() => threadsRepository.addComment({}, '', '')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   });
 
   it('should throw error when invoke abstract bahavior', async () => {
@@ -31,5 +31,21 @@ describe('ThreadsRepository interface', () => {
 
     // Action and Assert
     expect(() => threadsRepository.verifyAvailableThread('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
+  it('should throw error when invoke abstract bahavior', async () => {
+    // Arrange
+    const threadsRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadsRepository.verifyCommentOwner('', '')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
+  it('should throw error when invoke abstract behavior', async () => {
+    // Arrange
+    const threadsRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadsRepository.deleteCommentById('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   });
 });

@@ -1,5 +1,6 @@
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -24,6 +25,59 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return rows[0];
   }
 
+  async getThreadById(threadId) {
+    this.verifyAvailableThread(threadId);
+    const queryThread = {
+      text: 'SELECT threads.id, threads.title, threads.body, threads.created_at, users.username FROM threads INNER JOIN users ON users.id = threads.owner WHERE threads.id = $1',
+      values: [threadId],
+    };
+
+    const queryComments = {
+      text: 'SELECT comments.id, username, comments.created_at, comments.content, comments.is_delete FROM comments INNER JOIN users ON users.id = comments.owner WHERE comments.thread_id = $1',
+      values: [threadId],
+    };
+
+    const { rows: resultComments } = await this._pool.query(queryComments);
+
+    const comments = [];
+    resultComments.map((comment) => {
+      if (comment.is_delete === true) {
+        comments.push({
+          id: comment.id,
+          username: comment.username,
+          date: comment.created_at,
+          content: '**komentar telah dihapus**',
+        });
+      } else {
+        comments.push({
+          id: comment.id,
+          username: comment.username,
+          date: comment.created_at,
+          content: comment.content,
+        });
+      }
+    });
+
+    const { rows: resultThread } = await this._pool.query(queryThread);
+
+    const {
+      id, title, body, created_at, username,
+    } = resultThread[0];
+
+    const thread = {
+      id,
+      title,
+      body,
+      date: created_at,
+      username,
+    };
+
+    return {
+      ...thread,
+      comments,
+    };
+  }
+
   async verifyAvailableThread(id) {
     const query = {
       text: 'SELECT * FROM threads WHERE id = $1',
@@ -41,15 +95,44 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     const { content } = newComment;
     const id = `comment-${this._idGenerator()}`;
     const createdAt = new Date().toISOString();
+    const isDelete = false;
 
     const query = {
-      text: 'INSERT INTO comments VALUES($1, $2, $3, $4, $5) RETURNING id, content, owner',
-      values: [id, content, createdAt, credentialId, threadId],
+      text: 'INSERT INTO comments VALUES($1, $2, $3, $4, $5, $6) RETURNING id, content, owner',
+      values: [id, content, createdAt, credentialId, threadId, isDelete],
     };
 
     const { rows } = await this._pool.query(query);
 
     return rows[0];
+  }
+
+  async verifyCommentOwner(commentId, credentialId) {
+    const query = {
+      text: 'SELECT * FROM comments WHERE id = $1',
+      values: [commentId],
+    };
+
+    const { rows, rowCount } = await this._pool.query(query);
+
+    if (!rowCount) {
+      throw new NotFoundError('comment tidak ditemukan');
+    }
+
+    const { owner } = rows[0];
+
+    if (rowCount && owner !== credentialId) {
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini!');
+    }
+  }
+
+  async deleteCommentById(id) {
+    const query = {
+      text: 'UPDATE comments SET is_delete = $1 WHERE id =$2',
+      values: [true, id],
+    };
+
+    await this._pool.query(query);
   }
 }
 

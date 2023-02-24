@@ -1,5 +1,7 @@
 const AddThreadUseCase = require('../../../../Applications/use_case/AddThreadsUserCase');
 const AddCommentUseCase = require('../../../../Applications/use_case/AddCommentUseCase');
+const DeleteCommentUseCase = require('../../../../Applications/use_case/DeleteComentUseCase');
+const GetThreadUseCase = require('../../../../Applications/use_case/GetThreadUseCase');
 
 class ThreadsHandler {
   constructor(container) {
@@ -7,11 +9,12 @@ class ThreadsHandler {
 
     this.postThreadHandler = this.postThreadHandler.bind(this);
     this.postCommentHandler = this.postCommentHandler.bind(this);
+    this.deleteCommentHandler = this.deleteCommentHandler.bind(this);
+    this.getThreadHandler = this.getThreadHandler.bind(this);
   }
 
   async postThreadHandler(request, h) {
     const { id: credentialId } = request.auth.credentials;
-    console.log(credentialId);
     const addThreadUseCase = this._container.getInstance(AddThreadUseCase.name);
 
     const addedThread = await addThreadUseCase.execute(request.payload, credentialId);
@@ -24,6 +27,20 @@ class ThreadsHandler {
     });
     response.code(201);
     return response;
+  }
+
+  async getThreadHandler(request, h) {
+    const { threadId } = request.params;
+    const getThreadUseCase = this._container.getInstance(GetThreadUseCase.name);
+
+    const thread = await getThreadUseCase.execute(threadId);
+
+    return {
+      status: 'success',
+      data: {
+        thread,
+      },
+    };
   }
 
   async postCommentHandler(request, h) {
@@ -42,6 +59,19 @@ class ThreadsHandler {
     });
     response.code(201);
     return response;
+  }
+
+  async deleteCommentHandler(request, h) {
+    const { threadId, commentId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    const deleteCommentUse = this._container.getInstance(DeleteCommentUseCase.name);
+
+    await deleteCommentUse.execute(commentId, threadId, credentialId);
+
+    return {
+      status: 'success',
+    };
   }
 }
 
