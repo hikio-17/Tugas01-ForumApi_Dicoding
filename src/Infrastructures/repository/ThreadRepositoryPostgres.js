@@ -26,7 +26,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
   }
 
   async getThreadById(threadId) {
-    this.verifyAvailableThread(threadId);
     const queryThread = {
       text: 'SELECT threads.id, threads.title, threads.body, threads.created_at, users.username FROM threads INNER JOIN users ON users.id = threads.owner WHERE threads.id = $1',
       values: [threadId],
@@ -37,25 +36,36 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       values: [threadId],
     };
 
+    const queryReplies = {
+      text: 'SELECT replies.id, username, replies.created_at, replies.content, replies.comment_id, replies.is_delete FROM replies INNER JOIN users ON users.id = replies.owner WHERE replies.thread_id = $1 ORDER BY created_at',
+      values: [threadId],
+    };
+
+    const { rows: resultReplies } = await this._pool.query(queryReplies);
+
     const { rows: resultComments } = await this._pool.query(queryComments);
 
     const comments = [];
+
     resultComments.map((comment) => {
-      if (comment.is_delete === true) {
-        comments.push({
-          id: comment.id,
-          username: comment.username,
-          date: comment.created_at,
-          content: '**komentar telah dihapus**',
-        });
-      } else {
-        comments.push({
-          id: comment.id,
-          username: comment.username,
-          date: comment.created_at,
-          content: comment.content,
-        });
-      }
+      const replies = [];
+      resultReplies.map((reply) => {
+        if (comment.id === reply.comment_id) {
+          replies.push({
+            id: reply.id,
+            content: reply.is_delete ? '**balasan telah dihapus**' : reply.content,
+            date: reply.created_at,
+            username: reply.username,
+          });
+        }
+      });
+      comments.push({
+        id: comment.id,
+        username: comment.username,
+        date: comment.created_at,
+        replies,
+        content: comment.is_delete ? '**komentar telah dihapus**' : comment.content,
+      });
     });
 
     const { rows: resultThread } = await this._pool.query(queryThread);
@@ -126,10 +136,66 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
   }
 
+  async verifyAvailableComment(id) {
+    const query = {
+      text: 'SELECT * FROM comments WHERE id = $1',
+      values: [id],
+    };
+
+    const { rowCount } = await this._pool.query(query);
+
+    if (!rowCount) {
+      throw new NotFoundError('Comment tidak ditemukan');
+    }
+  }
+
+  async verifyReplyOwner(replyId, credentialId) {
+    const query = {
+      text: 'SELECT * FROM replies WHERE id = $1',
+      values: [replyId],
+    };
+
+    const { rows: reply, rowCount } = await this._pool.query(query);
+
+    if (!rowCount) {
+      throw new NotFoundError('reply comment tidak ditemukan');
+    }
+
+    if (rowCount && reply[0].owner !== credentialId) {
+      throw new AuthorizationError('anda tidak berhak mengakses resource ini');
+    }
+  }
+
+  async addNewReplyComment(newReply, threadId, commentId, credentialId) {
+    const id = `reply-${this._idGenerator()}`;
+    const createdAt = new Date().toISOString();
+    const isDelete = false;
+
+    const { content } = newReply;
+
+    const query = {
+      text: 'INSERT INTO replies VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, content, owner',
+      values: [id, content, createdAt, credentialId, threadId, commentId, isDelete],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    return rows[0];
+  }
+
   async deleteCommentById(id) {
     const query = {
       text: 'UPDATE comments SET is_delete = $1 WHERE id =$2',
       values: [true, id],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async deleteReplyCommentById(replyId) {
+    const query = {
+      text: 'UPDATE replies SET is_delete = $1 WHERE id =$2',
+      values: [true, replyId],
     };
 
     await this._pool.query(query);
