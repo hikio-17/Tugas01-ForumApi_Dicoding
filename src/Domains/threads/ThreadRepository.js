@@ -24,7 +24,7 @@ class ThreadRepository {
   }
 
   async verifyAvailableComment(id) {
-    throw new Error('THREADS_RESPOSITORY.METHOD_NOT_IMPLEMENTED');
+    throw new Error('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 
   async deleteCommentById(id) {

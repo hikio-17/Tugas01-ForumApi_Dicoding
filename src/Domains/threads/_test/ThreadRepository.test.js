@@ -48,4 +48,36 @@ describe('ThreadsRepository interface', () => {
     // Action and Assert
     expect(() => threadsRepository.deleteCommentById('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   });
+
+  it('should throw error when invoke abstract behavior', async () => {
+    // Arrange
+    const threadRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadRepository.verifyReplyOwner('', '')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
+  it('should throw erro when invoke abstract behavior', async () => {
+    // Arrange
+    const threadsRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadsRepository.verifyAvailableComment('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
+  it('should throw error when invoke abstract behavior', async () => {
+    // Arrange
+    const threadRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadRepository.addNewReplyComment('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
+
+  it('should throw error when invoke abstract behavior', async () => {
+    // Arrange
+    const threadRepository = new ThreadRepository();
+
+    // Action and Assert
+    expect(() => threadRepository.deleteReplyCommentById('')).rejects.toThrowError('THREADS_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  });
 });

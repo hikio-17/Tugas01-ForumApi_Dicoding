@@ -4,6 +4,24 @@ const AddThreadUseCase = require('../AddThreadsUserCase');
 const NewAddedThread = require('../../../Domains/threads/entities/NewAddedThread');
 
 describe('AddThreadUseCase', () => {
+  it('should throw error if use case paramater not countain credentialId', async () => {
+    // Arrange
+    const newThread = { title: 'title', body: 'body' };
+    const addThreadUseCase = new AddThreadUseCase({});
+
+    // Action & Assert
+    await expect(addThreadUseCase.execute(newThread)).rejects.toThrowError('NEW_THREAD_USE_CASE.NOT_CONTAIN_CREDENTIAL_ID');
+  });
+
+  it('should throw error if credentialId not string', async () => {
+    // Arrange
+    const newThread = { title: 'title', body: 'body' };
+    const addThreadUseCase = new AddThreadUseCase({});
+    const credentialId = 1234;
+
+    // Action & Assert
+    await expect(addThreadUseCase.execute(newThread, credentialId)).rejects.toThrowError('NEW_THREAD_USE_CASE.CREDENTIAL_ID_NOT_MEET_DATA_TYPE_SPECIFICATION');
+  });
   /**
    * Menguji apakah use case mampu mengoskestrasikan langkah demi langkah dengan benar.
    */

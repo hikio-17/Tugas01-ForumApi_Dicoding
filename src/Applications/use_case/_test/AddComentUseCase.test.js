@@ -4,6 +4,18 @@ const NewAddedComment = require('../../../Domains/threads/entities/NewAddedComme
 const AddCommentUseCase = require('../AddCommentUseCase');
 
 describe('AddComentUseCase', () => {
+  it('should throw error if threadId, credentialId not string', async () => {
+    // Arrange
+    const newComment = { content: 'sebuah comment' };
+    const threadReppository = new ThreadRepository();
+    const addCommentUseCase = new AddCommentUseCase({ threadRepository: threadReppository });
+    const credentialId = 1234;
+    const threadId = 'thread-123';
+
+    // Action & Assert
+    await expect(addCommentUseCase.execute(newComment, threadId, credentialId)).rejects.toThrowError('ADD_COMMENT_USE_CASE_NOT_MEET_DATA_TYPE_SPECIFICATION');
+  });
+
   it('should orchestrating the add comment action correctly', async () => {
     // Arrange
     const useCasePayload = {
@@ -15,6 +27,7 @@ describe('AddComentUseCase', () => {
       content: 'sebuah comment',
       owner: 'user-1234',
     });
+
     const threadId = 'thread-123';
     const credentialId = 'user-1234';
 
