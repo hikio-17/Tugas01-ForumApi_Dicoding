@@ -1,6 +1,9 @@
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
+const repliesToModel = require('../../utils/repliesToModel');
+const commentToModel = require('../../utils/commentToModel');
+const threadToModel = require('../../utils/threadToModel');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -51,39 +54,16 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       const replies = [];
       resultReplies.map((reply) => {
         if (comment.id === reply.comment_id) {
-          replies.push({
-            id: reply.id,
-            content: reply.is_delete ? '**balasan telah dihapus**' : reply.content,
-            date: reply.created_at,
-            username: reply.username,
-          });
+          replies.push(repliesToModel(reply));
         }
       });
-      comments.push({
-        id: comment.id,
-        username: comment.username,
-        date: comment.created_at,
-        replies,
-        content: comment.is_delete ? '**komentar telah dihapus**' : comment.content,
-      });
+      comments.push(commentToModel(comment, replies));
     });
 
     const { rows: resultThread } = await this._pool.query(queryThread);
 
-    const {
-      id, title, body, created_at, username,
-    } = resultThread[0];
-
-    const thread = {
-      id,
-      title,
-      body,
-      date: created_at,
-      username,
-    };
-
     return {
-      ...thread,
+      ...threadToModel(resultThread[0]),
       comments,
     };
   }

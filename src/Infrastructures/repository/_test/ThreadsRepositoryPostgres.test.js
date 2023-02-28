@@ -10,16 +10,19 @@ const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
 const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const UserRepositoryPostgres = require('../UserRepositoryPostgres');
+const InvariantError = require('../../../Commons/exceptions/InvariantError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('ThreadsRepositoryPostgres', () => {
-  afterEach(async () => {
-    await ThreadsTableTestHelper.cleanTable();
-  });
+  // afterEach(async () => {
+  //   await ThreadsTableTestHelper.cleanTable();
+  // });
 
-  afterAll(async () => {
-    await pool.end();
-  });
-  describe('addThread function', () => {
+  // afterAll(async () => {
+  //   await pool.end();
+  // });
+  describe('ThreadRepository', () => {
+    // add user
     it('should persist register user and return registered user correctly', async () => {
       // Arrange
       const registerUser = new RegisterUser({
@@ -38,135 +41,142 @@ describe('ThreadsRepositoryPostgres', () => {
       expect(users).toHaveLength(1);
     });
 
-    it('should persist add new thread and return value correctly', async () => {
-      // Arrange
-      const newThread = new NewThread({
-        title: 'ini title',
-        body: 'ini body',
+    describe('addThread function', () => {
+      it('should persist add new thread and return value correctly', async () => {
+        // Arrange
+        const newThread = new NewThread({
+          title: 'ini title',
+          body: 'ini body',
+        });
+        const credentialId = 'user-1234';
+        const fakeIdGenerator = () => '1234';
+        const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+        // Action
+        const newAddedThread = await threadRepositoryPostgres.addThread(newThread, credentialId);
+        const thread = await ThreadsTableTestHelper.findThreadById('thread-1234');
+
+        // Assert
+        expect(thread).toHaveLength(1);
+        expect(newAddedThread).toEqual(new NewAddedThread({
+          id: 'thread-1234',
+          title: 'ini title',
+          owner: 'user-1234',
+        }));
       });
-      const credentialId = 'user-1234';
-      const fakeIdGenerator = () => '1234';
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-
-      // Action
-      await threadRepositoryPostgres.addThread(newThread, credentialId);
-
-      // Assert
-      const thread = await ThreadsTableTestHelper.findThreadById('thread-1234');
-      expect(thread).toHaveLength(1);
     });
+  });
 
-    it('should return addedThread correctly', async () => {
+  describe('addComment function', () => {
+    it('should persist add new comment and return value correctly', async () => {
       // Arrange
       const newThread = new NewThread({
         title: 'ini title',
         body: 'ini body',
       });
+
+      const comment = {
+        content: 'berisi sebuah comment',
+      };
+      const threadId = 'thread-1234';
       const credentialId = 'user-1234';
-      const fakeIdGenerator = () => '1234';
+      const fakeIdGenerator = () => 1234;
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      const newAddedThread = await threadRepositoryPostgres.addThread(newThread, credentialId);
+      const newComment = await threadRepositoryPostgres.addComment(comment, threadId, credentialId);
+      const commentById = await CommentsTableTestHelper.findCommentById('comment-1234');
 
       // Assert
-      expect(newAddedThread).toEqual(new NewAddedThread({
-        id: 'thread-1234',
-        title: 'ini title',
+      expect(commentById).toHaveLength(1);
+      expect(newComment).toEqual(new NewAddedComment({
+        id: 'comment-1234',
+        content: 'berisi sebuah comment',
         owner: 'user-1234',
       }));
     });
   });
 
   describe('verifyAvailbaleThread function', () => {
-    it('should throw new InvariantError when thread not available', async () => {
+    it('should throw NotFoundError when threadId not available', async () => {
       // Arrange
-      const registerUser = new RegisterUser({
-        username: 'myUser1',
-        password: 'secret',
-        fullname: 'userTesting',
-      });
-      const threadId = 'thread-1234';
-      const credentialId = 'user-12345';
-      const fakeIdGenerator = () => '12345'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-
-      await userRepositoryPostgres.addUser(registerUser);
-      await ThreadsTableTestHelper.addThread({ threadId, credentialId });
+      const threadId = 'threadid-fake';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-      // Action and Assert
-      await expect(threadRepositoryPostgres.verifyAvailableThread('fake_id')).rejects.toThrowError(NotFoundError);
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyAvailableThread(threadId)).rejects.toThrow(NotFoundError);
     });
 
-    it('should not throw  when thread available', async () => {
+    it('should not throw NotFoundError whent threadId available', async () => {
       // Arrange
       const threadId = 'thread-1234';
-      const credentialId = 'user-12345';
-      await ThreadsTableTestHelper.addThread(threadId, credentialId);
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-      // Action and Assert
-      await expect(threadRepositoryPostgres.verifyAvailableThread('thread-1234')).resolves.not.toThrowError(NotFoundError);
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyAvailableThread(threadId)).resolves.not.toThrow(NotFoundError);
     });
   });
 
-  describe('addComment function', () => {
-    it('should persist addcomment and return new added comment correctly', async () => {
-      /** Arrange */
-      // create user
-      const user = {
-        id: 'user-123456',
-        username: 'user11',
-        password: 'secret',
-        fullname: 'User Secret',
-      };
-      // create newComment
-      const newComment = new NewComment({
-        content: 'berisi sebuah comment',
-      });
-      const credentialId = 'user-123456';
-      const threadId = 'thread-1234';
-      const fakeIdGenerator = () => 123; // stub
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+  describe('verifyAvailableComment function', () => {
+    it('should throw NotFoundError whent commentId not available', async () => {
+      // Arrange
+      const commentId = 'commentId-fake';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-      await UsersTableTestHelper.addUser(user);
-      await ThreadsTableTestHelper.addThread(threadId, credentialId);
-
-      // Action
-      await threadRepositoryPostgres.addComment(newComment, threadId, credentialId);
-
-      // Assert
-      const comments = await CommentsTableTestHelper.findCommentById('comment-123');
-      expect(comments).toHaveLength(1);
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyAvailableComment(commentId)).rejects.toThrow(NotFoundError);
     });
 
-    it('should return newAddedComment correctly', async () => {
-      // Arrange
-      const user = {
-        id: 'user-2222',
-        username: 'user22',
-        password: 'secret',
-        fullname: 'User Secret',
-      };
-      const newComment = {
-        content: 'berisi sebuah comment',
-      };
-      const fakeIdGenerator = () => '123'; // stub!
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-
-      await ThreadsTableTestHelper.addThread({ id: 'thread-1234', credentialId: 'user-2222' }); // threadId = 'thread-1234' stub!
-      await UsersTableTestHelper.addUser(user);
-
+    it('should not throw NotFoundError when commentId available', async () => {
       // Action
-      const newAddedComment = await threadRepositoryPostgres.addComment(newComment, 'thread-1234', 'user-2222');
+      const commentId = 'comment-1234';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-      // Assert
-      expect(newAddedComment).toStrictEqual(new NewAddedComment({
-        id: 'comment-123',
-        content: 'berisi sebuah comment',
-        owner: 'user-2222',
-      }));
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyAvailableComment(commentId)).resolves.not.toThrow(NotFoundError);
     });
   });
+
+  describe('verifyCommentOwner function', () => {
+    it('should throw NotFoundError when commentId not available', async () => {
+      // Arrange
+      const commentId = 'commentId-fake';
+      const credentialId = 'user-1234'; // owner comment
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentOwner(commentId, credentialId)).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw AutorizationError when credentialId not have commentOwner', async () => {
+      // Arrrange
+      const commentId = 'comment-1234';
+      const credentialId = 'userId-fake';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentOwner(commentId, credentialId)).rejects.toThrow(AuthorizationError);
+    });
+
+    it('should not NotFoundError and AuthorizationError when valid commendId and CredentialId', async () => {
+      // Arrange
+      const commentId = 'comment-1234';
+      const credentialId = 'user-1234'; // userId owner comment
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentOwner(commentId, credentialId)).resolves.not.toThrow(NotFoundError, AuthorizationError);
+    });
+  });
+
+  // describe('getThreadById', () => {
+  //   it('should throw NotFoundError when threadId not available', async () => {
+  //     // Arrange
+  //     const threadId = 'threadId-notFound';
+  //     const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+  //     // Action & Assert
+  //     await expect(threadRepositoryPostgres.getThreadById(threadId)).rejects.toThrowError(NotFoundError);
+  //   });
+  // });
 });

@@ -13,7 +13,7 @@ describe('AddComentUseCase', () => {
     const threadId = 'thread-123';
 
     // Action & Assert
-    await expect(addCommentUseCase.execute(newComment, threadId, credentialId)).rejects.toThrowError('ADD_COMMENT_USE_CASE_NOT_MEET_DATA_TYPE_SPECIFICATION');
+    await expect(addCommentUseCase.execute(newComment, threadId, credentialId)).rejects.toThrowError('ADD_COMMENT_USE_CASE.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 
   it('should orchestrating the add comment action correctly', async () => {
