@@ -3,6 +3,8 @@ const ThreadsTableTestHandler = require('../../../../tests/ThreadsTableTestHelpe
 const createServer = require('../createServer');
 const container = require('../../container');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 
 describe('/threads endpoint', () => {
   afterAll(async () => {
@@ -148,18 +150,21 @@ describe('/threads endpoint', () => {
         },
       });
 
-      // Assert
+      // set Variable threadId
       const responseJson = JSON.parse(response.payload);
+      threadId = responseJson.data.addedThread.id;
+
+      const thread = await ThreadsTableTestHandler.findThreadById(threadId);
+
+      // Assert
       expect(response.statusCode).toEqual(201);
+      expect(thread).toHaveLength(1);
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data).toHaveProperty('addedThread');
       expect(responseJson.data.addedThread).toBeDefined();
       expect(responseJson.data.addedThread).toHaveProperty('id');
       expect(responseJson.data.addedThread).toHaveProperty('title');
       expect(responseJson.data.addedThread).toHaveProperty('owner');
-
-      // set Variable threadId
-      threadId = responseJson.data.addedThread.id;
     });
 
     it('should response 400 when title more than 50 character', async () => {
@@ -300,10 +305,14 @@ describe('/threads endpoint', () => {
           Authorization: `Bearer ${accessTokenUserB}`,
         },
       });
+      // set variable commentId
+      const responseJson = JSON.parse(response.payload);
+      commentId = responseJson.data.addedComment.id;
+      const comment = await CommentsTableTestHelper.findCommentById(commentId);
 
       // Assert
-      const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
+      expect(comment).toHaveLength(1);
       expect(responseJson).toHaveProperty('status');
       expect(responseJson.status).toEqual('success');
       expect(responseJson).toHaveProperty('data');
@@ -312,9 +321,6 @@ describe('/threads endpoint', () => {
       expect(responseJson.data.addedComment).toHaveProperty('id');
       expect(responseJson.data.addedComment).toHaveProperty('content');
       expect(responseJson.data.addedComment).toHaveProperty('owner');
-
-      // set variable commentId
-      commentId = responseJson.data.addedComment.id;
     });
   });
 
@@ -430,10 +436,15 @@ describe('/threads endpoint', () => {
           Authorization: `Bearer ${accessTokenUserA}`,
         },
       });
+      // set variable replyId
+      const responseJson = JSON.parse(response.payload);
+      replyId = responseJson.data.addedReply.id;
+
+      const reply = await RepliesTableTestHelper.getReplyById(replyId);
 
       // Assert
-      const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
+      expect(reply).toHaveLength(1);
       expect(responseJson).toHaveProperty('status');
       expect(responseJson.status).toEqual('success');
       expect(responseJson).toHaveProperty('data');
@@ -442,9 +453,6 @@ describe('/threads endpoint', () => {
       expect(responseJson.data.addedReply).toHaveProperty('id');
       expect(responseJson.data.addedReply).toHaveProperty('content');
       expect(responseJson.data.addedReply).toHaveProperty('owner');
-
-      // set variable replyId
-      replyId = responseJson.data.addedReply.id;
     });
   });
 
@@ -459,10 +467,12 @@ describe('/threads endpoint', () => {
         method: 'GET',
         url: `/threads/${threadId}`,
       });
+      const thread = await ThreadsTableTestHandler.findThreadById(threadId);
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
+      expect(thread).toHaveLength(1);
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data).toHaveProperty('thread');
       expect(responseJson.data.thread).toBeDefined();
@@ -540,10 +550,12 @@ describe('/threads endpoint', () => {
           Authorization: `Bearer ${accessTokenUserA}`,
         },
       });
+      const reply = await RepliesTableTestHelper.getReplyById(replyId);
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
+      expect(reply[0].is_delete).toEqual(true);
       expect(responseJson.status).toEqual('success');
     });
   });
@@ -619,9 +631,11 @@ describe('/threads endpoint', () => {
           Authorization: `Bearer ${accessTokenUserB}`,
         },
       });
+      const comment = await CommentsTableTestHelper.findCommentById(commentId);
 
       // Assert
       const responseJson = JSON.parse(response.payload);
+      expect(comment[0].is_delete).toEqual(true);
       expect(response.statusCode).toEqual(200);
       expect(responseJson.status).toEqual('success');
     });
