@@ -1,14 +1,15 @@
 class DeleteCommentUseCase {
-  constructor({ threadRepository }) {
+  constructor({ threadRepository, commentRepository }) {
     this._threadRepository = threadRepository;
+    this._commentRepository = commentRepository;
   }
 
   async execute(commentId, threadId, credentialId) {
     this._verifyParams(commentId, threadId, credentialId);
     await this._threadRepository.verifyAvailableThread(threadId);
-    await this._threadRepository.verifyAvailableComment(commentId);
-    await this._threadRepository.verifyCommentOwner(commentId, credentialId);
-    await this._threadRepository.deleteCommentById(commentId);
+    await this._commentRepository.verifyAvailableComment(commentId);
+    await this._commentRepository.verifyCommentOwner(commentId, credentialId);
+    await this._commentRepository.deleteCommentById(commentId);
   }
 
   _verifyParams(commentId, threadId, credentialId) {

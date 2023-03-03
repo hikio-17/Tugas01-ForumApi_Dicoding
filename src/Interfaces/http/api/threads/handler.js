@@ -10,7 +10,6 @@ class ThreadsHandler {
     this._container = container;
 
     this.postThreadHandler = this.postThreadHandler.bind(this);
-    this.postCommentHandler = this.postCommentHandler.bind(this);
     this.postnewReplyCommentHandler = this.postnewReplyCommentHandler.bind(this);
     this.deleteCommentHandler = this.deleteCommentHandler.bind(this);
     this.getThreadHandler = this.getThreadHandler.bind(this);
@@ -45,24 +44,6 @@ class ThreadsHandler {
         thread,
       },
     };
-  }
-
-  async postCommentHandler(request, h) {
-    const { threadId } = request.params;
-    const { id: credentialId } = request.auth.credentials;
-
-    const addCommentUseCase = this._container.getInstance(AddCommentUseCase.name);
-
-    const addedComment = await addCommentUseCase.execute(request.payload, threadId, credentialId);
-
-    const response = h.response({
-      status: 'success',
-      data: {
-        addedComment,
-      },
-    });
-    response.code(201);
-    return response;
   }
 
   async postnewReplyCommentHandler(request, h) {

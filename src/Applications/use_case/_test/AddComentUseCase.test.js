@@ -2,13 +2,15 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const NewComment = require('../../../Domains/threads/entities/NewComment');
 const NewAddedComment = require('../../../Domains/threads/entities/NewAddedComment');
 const AddCommentUseCase = require('../AddCommentUseCase');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
 
 describe('AddComentUseCase', () => {
   it('should throw error if threadId, credentialId not string', async () => {
     // Arrange
     const newComment = { content: 'sebuah comment' };
-    const threadReppository = new ThreadRepository();
-    const addCommentUseCase = new AddCommentUseCase({ threadRepository: threadReppository });
+    const threadRepository = new ThreadRepository();
+    const commentRepository = new CommentRepository();
+    const addCommentUseCase = new AddCommentUseCase({ threadRepository, commentRepository });
     const credentialId = 1234;
     const threadId = 'thread-123';
 
@@ -33,14 +35,16 @@ describe('AddComentUseCase', () => {
 
     // Creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
 
     // mocking needed function
     mockThreadRepository.verifyAvailableThread = jest.fn().mockImplementation(() => Promise.resolve());
-    mockThreadRepository.addComment = jest.fn().mockImplementation(() => Promise.resolve(mockAddedComment));
+    mockCommentRepository.addComment = jest.fn().mockImplementation(() => Promise.resolve(mockAddedComment));
 
     // creating use case instance
     const getCommentUseCase = new AddCommentUseCase({
       threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
     });
 
     // Action
@@ -54,7 +58,7 @@ describe('AddComentUseCase', () => {
     }));
 
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
-    expect(mockThreadRepository.addComment).toBeCalledWith(new NewComment({
+    expect(mockCommentRepository.addComment).toBeCalledWith(new NewComment({
       content: 'sebuah comment',
     }), threadId, credentialId);
   });
