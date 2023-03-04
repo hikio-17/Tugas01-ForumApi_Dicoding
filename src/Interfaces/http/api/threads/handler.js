@@ -1,19 +1,12 @@
 const AddThreadUseCase = require('../../../../Applications/use_case/AddThreadsUserCase');
-const AddCommentUseCase = require('../../../../Applications/use_case/AddCommentUseCase');
-const DeleteCommentUseCase = require('../../../../Applications/use_case/DeleteComentUseCase');
 const GetThreadUseCase = require('../../../../Applications/use_case/GetThreadUseCase');
-const AddNewReplyCommentUseCase = require('../../../../Applications/use_case/AddNewReplyCommentUseCase');
-const DeleteReplyCommentUseCase = require('../../../../Applications/use_case/DeleteReplyCommentUseCase');
 
 class ThreadsHandler {
   constructor(container) {
     this._container = container;
 
     this.postThreadHandler = this.postThreadHandler.bind(this);
-    this.postnewReplyCommentHandler = this.postnewReplyCommentHandler.bind(this);
-    this.deleteCommentHandler = this.deleteCommentHandler.bind(this);
     this.getThreadHandler = this.getThreadHandler.bind(this);
-    this.deleteReplyCommentByIdHandler = this.deleteReplyCommentByIdHandler.bind(this);
   }
 
   async postThreadHandler(request, h) {
@@ -43,50 +36,6 @@ class ThreadsHandler {
       data: {
         thread,
       },
-    };
-  }
-
-  async postnewReplyCommentHandler(request, h) {
-    const { threadId, commentId } = request.params;
-    const { id: credentialId } = request.auth.credentials;
-
-    const addNewReplyCommentUseCase = this._container.getInstance(AddNewReplyCommentUseCase.name);
-
-    const addedReply = await addNewReplyCommentUseCase.execute(request.payload, threadId, commentId, credentialId);
-
-    const response = h.response({
-      status: 'success',
-      data: {
-        addedReply,
-      },
-    });
-    response.code(201);
-    return response;
-  }
-
-  async deleteCommentHandler(request, h) {
-    const { threadId, commentId } = request.params;
-    const { id: credentialId } = request.auth.credentials;
-
-    const deleteCommentUse = this._container.getInstance(DeleteCommentUseCase.name);
-
-    await deleteCommentUse.execute(commentId, threadId, credentialId);
-
-    return {
-      status: 'success',
-    };
-  }
-
-  async deleteReplyCommentByIdHandler(request, h) {
-    const { threadId, commentId, replyId } = request.params;
-    const { id: credentialId } = request.auth.credentials;
-
-    const deleteReplyCommentUseCase = this._container.getInstance(DeleteReplyCommentUseCase.name);
-
-    await deleteReplyCommentUseCase.execute(threadId, commentId, replyId, credentialId);
-
-    return {
-      status: 'success',
     };
   }
 }

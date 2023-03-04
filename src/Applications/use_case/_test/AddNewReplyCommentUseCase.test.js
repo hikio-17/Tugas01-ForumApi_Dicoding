@@ -1,14 +1,18 @@
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
-const NewAddedReplyComment = require('../../../Domains/threads/entities/NewAddedReplyComment');
+const NewAddedReplyComment = require('../../../Domains/replies/entities/NewAddedReplyComment');
 const AddNewReplyCommentUseCase = require('../AddNewReplyCommentUseCase');
-const NewReplyComment = require('../../../Domains/threads/entities/NewReplyComment');
+const NewReplyComment = require('../../../Domains/replies/entities/NewReplyComment');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 
 describe('AddNewReplyCommentUseCase', () => {
   it('should throw error if threadId, credentialId not string', async () => {
     // Arrange
     const newReplyComment = { content: 'sebuah reply comment' };
     const threadRepository = new ThreadRepository();
-    const addNewReplyCommentUseCase = new AddNewReplyCommentUseCase({ threadRepository });
+    const commentRepository = new CommentRepository();
+    const replyRepository = new ReplyRepository();
+    const addNewReplyCommentUseCase = new AddNewReplyCommentUseCase({ threadRepository, commentRepository, replyRepository });
     const commentId = true;
     const credentialId = 1234;
     const threadId = 'thread-123';
@@ -35,15 +39,19 @@ describe('AddNewReplyCommentUseCase', () => {
 
     // Creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
 
     // mocking needed function
     mockThreadRepository.verifyAvailableThread = jest.fn().mockImplementation(() => Promise.resolve());
-    mockThreadRepository.verifyAvailableComment = jest.fn().mockImplementation(() => Promise.resolve());
-    mockThreadRepository.addNewReplyComment = jest.fn().mockImplementation(() => Promise.resolve(mockAddNewReplyComment));
+    mockCommentRepository.verifyAvailableComment = jest.fn().mockImplementation(() => Promise.resolve());
+    mockReplyRepository.addNewReplyComment = jest.fn().mockImplementation(() => Promise.resolve(mockAddNewReplyComment));
 
     // creating use case intance
     const getAddNewReplyCommentUseCase = new AddNewReplyCommentUseCase({
       threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
     });
 
     // Action
@@ -51,8 +59,8 @@ describe('AddNewReplyCommentUseCase', () => {
 
     // Assert
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
-    expect(mockThreadRepository.verifyAvailableComment).toBeCalledWith(commentId);
-    expect(mockThreadRepository.addNewReplyComment).toBeCalledWith(new NewReplyComment({
+    expect(mockCommentRepository.verifyAvailableComment).toBeCalledWith(commentId);
+    expect(mockReplyRepository.addNewReplyComment).toBeCalledWith(new NewReplyComment({
       content: 'reply sebuah comment',
     }), threadId, commentId, credentialId);
   });

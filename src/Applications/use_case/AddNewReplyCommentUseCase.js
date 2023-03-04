@@ -11,7 +11,6 @@ class AddNewReplyCommentUseCase {
     this._verifyParams(threadId, commentId, credentialId);
     await this._threadRepository.verifyAvailableThread(threadId);
     await this._commentRepository.verifyAvailableComment(commentId);
-    console.log(threadId, commentId);
     const newReplyComment = new NewReplyComment(newReply);
     return this._replyRepository.addNewReplyComment(newReplyComment, threadId, commentId, credentialId);
   }
