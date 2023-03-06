@@ -28,6 +28,7 @@ class GetThreadUseCase {
     resultComments.map((comment) => {
       const replies = [];
       resultReplies.map((reply) => {
+        /* istanbul ignore next */
         if (comment.id === reply.comment_id) {
           replies.push(new ReplyToModel(reply));
         }

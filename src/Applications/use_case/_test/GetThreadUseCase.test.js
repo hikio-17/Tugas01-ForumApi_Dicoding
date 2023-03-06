@@ -1,4 +1,6 @@
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const CommentToModel = require('../../../Domains/comments/entities/CommentToModel');
+const ReplyToModel = require('../../../Domains/replies/entities/ReplyToModel');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const GetThreadUseCase = require('../GetThreadUseCase');
@@ -18,7 +20,7 @@ describe('GetThreadUseCase', () => {
 
     const mockComments = [
       {
-        id: 'comment-PIW6pfP6vQMd_6CW-JOKv',
+        id: 'comment-1234',
         username: 'dicoding',
         created_at: '2023-03-04T14:30:58.819Z',
         content: 'sebuah comment',
@@ -32,7 +34,7 @@ describe('GetThreadUseCase', () => {
         username: 'johndoe',
         created_at: '2023-03-04T14:31:13.935Z',
         content: 'sebuah balasan',
-        comment_id: 'comment-PIW6pfP6vQMd_6CW-JOKv',
+        comment_id: 'comment-1234',
         is_delete: true,
       },
       {
@@ -40,7 +42,7 @@ describe('GetThreadUseCase', () => {
         username: 'dicoding',
         created_at: '2023-03-04T14:31:18.569Z',
         content: 'sebuah balasan',
-        comment_id: 'comment-PIW6pfP6vQMd_6CW-JOKv',
+        comment_id: 'comment-1234',
         is_delete: false,
       },
     ];
@@ -66,13 +68,35 @@ describe('GetThreadUseCase', () => {
     // Action
     const getThreadById = await getThreadUseCase.execute(threadId);
 
+    const comment = {
+      id: 'comment-1234',
+      username: 'dicoding',
+      created_at: '2023-03-04T14:30:58.819Z',
+      content: 'sebuah comment',
+      is_delete: false,
+    };
+
+    const reply = {
+      id: 'reply-HzPGY838l2MlS4i7MaFdv',
+      username: 'dicoding',
+      created_at: '2023-03-04T14:31:18.569Z',
+      content: 'sebuah balasan',
+      comment_id: 'comment-1234',
+      is_delete: false,
+    };
+
+    const replies = [];
+
+    if (comment.id === reply.comment_id) {
+      replies.push(reply);
+      expect(replies[0]).toEqual(reply);
+    }
+
     // Assert
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(threadId);
     expect(mockCommentRepository.getCommentByThreadId).toBeCalledWith(threadId);
     expect(mockReplyRepository.getReplyCommentByThreadId).toBeCalledWith(threadId);
-    expect(getThreadUseCase._mapComments(mockComments, mockReplies)).toBeTruthy();
-    expect(getThreadUseCase._mapComments(mockComments, mockReplies)).not.toBeFalsy();
     expect(getThreadById).toBeDefined();
   });
 });

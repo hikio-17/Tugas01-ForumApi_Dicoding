@@ -12,6 +12,41 @@ describe('CommentToModel entities', () => {
     };
 
     // Action & Assert
-    expect(() => new CommentToModel(payload, '')).toThrowError('COMMENT_TO_MODEL.NOT_MEET_DATA_TYPE_SPESIFICATION');
+    expect(() => new CommentToModel(payload, [])).toThrowError('COMMENT_TO_MODEL.NOT_MEET_DATA_TYPE_SPESIFICATION');
+  });
+
+  it('should return value payload correctly', () => {
+    // Arrange
+    const contentFalseDelete = {
+      id: 'comment-123',
+      username: 'my user',
+      created_at: '2023',
+      content: 'sebuah comment',
+      is_delete: false,
+    };
+
+    const contentTrueDelete = {
+      id: 'comment-123',
+      username: 'my user',
+      created_at: '2023',
+      content: 'sebuah comment',
+      is_delete: true,
+    };
+
+    let content = '';
+
+    const commentToModelFalseDelete = new CommentToModel(contentFalseDelete, []);
+    const commentToModelTrueDelete = new CommentToModel(contentTrueDelete, []);
+
+    // Action & Assert
+    if (!contentFalseDelete.is_delete) {
+      content = commentToModelFalseDelete.content;
+      expect(content).toEqual('sebuah comment');
+    }
+
+    if (contentTrueDelete.is_delete) {
+      content = commentToModelTrueDelete.content;
+      expect(content).toEqual('**komentar telah dihapus**');
+    }
   });
 });

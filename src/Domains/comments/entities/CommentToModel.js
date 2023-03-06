@@ -6,7 +6,11 @@ class CommentToModel {
     this.username = comment.username;
     this.date = comment.created_at;
     this.replies = replies;
-    this.content = comment.is_delete ? '**komentar telah dihapus**' : comment.content;
+    this.content = this._displayContent(comment);
+  }
+
+  _displayContent(comment) {
+    return comment.is_delete ? '**komentar telah dihapus**' : comment.content;
   }
 
   _verifyComment({
