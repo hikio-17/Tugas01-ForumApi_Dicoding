@@ -27,11 +27,11 @@ describe('AddNewReplyCommentUseCase', () => {
       content: 'reply sebuah comment',
     };
 
-    const mockAddNewReplyComment = new NewAddedReplyComment({
+    const mockAddNewReplyComment = {
       id: 'reply-123',
       content: 'reply sebuah comment',
       owner: 'user-123',
-    });
+    };
 
     const threadId = 'thread-123';
     const commentId = 'comment-123';

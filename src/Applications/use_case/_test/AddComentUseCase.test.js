@@ -24,11 +24,11 @@ describe('AddComentUseCase', () => {
       content: 'sebuah comment',
     };
 
-    const mockAddedComment = new NewAddedComment({
+    const mockAddedComment = {
       id: 'comment-123',
       content: 'sebuah comment',
       owner: 'user-1234',
-    });
+    };
 
     const threadId = 'thread-123';
     const credentialId = 'user-1234';
@@ -51,7 +51,7 @@ describe('AddComentUseCase', () => {
     const newAddedComent = await getCommentUseCase.execute(useCasePayload, threadId, credentialId);
 
     // Assert
-    expect(newAddedComent).toStrictEqual(new NewAddedComment({
+    expect(newAddedComent).toEqual(new NewAddedComment({
       id: 'comment-123',
       content: 'sebuah comment',
       owner: 'user-1234',

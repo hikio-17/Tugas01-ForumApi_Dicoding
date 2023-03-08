@@ -3,9 +3,13 @@ class ReplyToModel {
     this._verifyReply(reply);
 
     this.id = reply.id;
-    this.content = reply.is_delete ? '**balasan telah dihapus**' : reply.content;
+    this.content = this.displayContent(reply);
     this.date = reply.created_at;
     this.username = reply.username;
+  }
+
+  displayContent(reply) {
+    return reply.is_delete ? '**balasan telah dihapus**' : reply.content;
   }
 
   _verifyReply({
