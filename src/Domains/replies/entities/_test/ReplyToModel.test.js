@@ -33,20 +33,22 @@ describe('ReplyToModel entities', () => {
       is_delete: true,
     };
 
-    let content = '';
-
+    // Action
     const replyToModelFalseDelete = new ReplyToModel(contentFalseDelete);
     const replyToModelTrueDelete = new ReplyToModel(contentTrueDelete);
 
-    // Action & Assert
-    if (!contentFalseDelete.is_delete) {
-      content = replyToModelFalseDelete.content;
-      expect(content).toEqual('sebuah balasan comment');
-    }
-
-    if (contentTrueDelete.is_delete) {
-      content = replyToModelTrueDelete.content;
-      expect(content).toEqual('**balasan telah dihapus**');
-    }
+    // Assert
+    expect(replyToModelFalseDelete).toEqual({
+      id: 'reply-123',
+      username: 'my user',
+      date: '2023',
+      content: 'sebuah balasan comment',
+    });
+    expect(replyToModelTrueDelete).toEqual({
+      id: 'reply-123',
+      username: 'my user',
+      date: '2023',
+      content: '**balasan telah dihapus**',
+    });
   });
 });

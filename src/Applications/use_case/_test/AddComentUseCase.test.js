@@ -51,11 +51,11 @@ describe('AddComentUseCase', () => {
     const newAddedComent = await getCommentUseCase.execute(useCasePayload, threadId, credentialId);
 
     // Assert
-    expect(newAddedComent).toEqual(new NewAddedComment({
+    expect(newAddedComent).toEqual({
       id: 'comment-123',
       content: 'sebuah comment',
       owner: 'user-1234',
-    }));
+    });
 
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
     expect(mockCommentRepository.addComment).toBeCalledWith(new NewComment({

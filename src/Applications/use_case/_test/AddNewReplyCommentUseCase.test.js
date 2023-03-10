@@ -58,6 +58,11 @@ describe('AddNewReplyCommentUseCase', () => {
     const newAddedReplyComment = await getAddNewReplyCommentUseCase.execute(payload, threadId, commentId, credentialId);
 
     // Assert
+    expect(newAddedReplyComment).toEqual({
+      id: 'reply-123',
+      content: 'reply sebuah comment',
+      owner: 'user-123',
+    });
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
     expect(mockCommentRepository.verifyAvailableComment).toBeCalledWith(commentId);
     expect(mockReplyRepository.addNewReplyComment).toBeCalledWith(new NewReplyComment({

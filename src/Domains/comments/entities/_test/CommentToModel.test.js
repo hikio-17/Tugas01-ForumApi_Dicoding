@@ -33,20 +33,24 @@ describe('CommentToModel entities', () => {
       is_delete: true,
     };
 
-    let content = '';
-
+    // Action
     const commentToModelFalseDelete = new CommentToModel(contentFalseDelete, []);
     const commentToModelTrueDelete = new CommentToModel(contentTrueDelete, []);
 
-    // Action & Assert
-    if (!contentFalseDelete.is_delete) {
-      content = commentToModelFalseDelete.content;
-      expect(content).toEqual('sebuah comment');
-    }
-
-    if (contentTrueDelete.is_delete) {
-      content = commentToModelTrueDelete.content;
-      expect(content).toEqual('**komentar telah dihapus**');
-    }
+    // Assert
+    expect(commentToModelFalseDelete).toEqual({
+      id: 'comment-123',
+      username: 'my user',
+      date: '2023',
+      content: 'sebuah comment',
+      replies: [],
+    });
+    expect(commentToModelTrueDelete).toEqual({
+      id: 'comment-123',
+      username: 'my user',
+      date: '2023',
+      content: '**komentar telah dihapus**',
+      replies: [],
+    });
   });
 });
