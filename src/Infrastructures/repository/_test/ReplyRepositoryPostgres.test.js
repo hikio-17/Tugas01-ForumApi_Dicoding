@@ -58,6 +58,27 @@ describe('ReplyRepositoryPostgres', () => {
     });
   });
 
+  describe('getReplyCommentByThreadId function', () => {
+    it('should persist get Reply Comment by Thread Id', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addNewReply({ content: 'sebuah balasan komentar' }); // replyId = 'reply-1234'
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action
+      const reply = await replyRepositoryPostgres.getReplyCommentByThreadId('thread-1234');
+
+      // Assert
+      expect(reply).toEqual([{
+        comment_id: 'comment-1234',
+        content: 'sebuah balasan komentar',
+        created_at: '2023',
+        id: 'reply-1234',
+        is_delete: false,
+        username: 'userComment',
+      }]);
+    });
+  });
+
   describe('verifyReplyOwner function', () => {
     it('should throw NotFoundError when replyId not available', async () => {
       // Arrange

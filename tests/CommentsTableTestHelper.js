@@ -20,7 +20,7 @@ const CommentsTableTestHelper = {
   async addComment(newComment) {
     const { content } = newComment;
     const id = 'comment-1234';
-    const created_at = new Date().toISOString();
+    const created_at = '2023';
     const owner = 'user-1234';
     const thread_id = 'thread-1234';
     const is_delete = false;

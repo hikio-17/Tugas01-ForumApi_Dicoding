@@ -68,6 +68,31 @@ describe('CommentRepositoryPostgres', () => {
     });
   });
 
+  describe('getCommentByThreadId', () => {
+    it('should persist get comment by threadId and return value correctly', async () => {
+      // Arrange
+      const newComment = {
+        content: 'sebuah comment',
+      };
+      await CommentsTableTestHelper.addComment(newComment); // commentId = 'thread-1234'
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action
+      const comment = await commentRepositoryPostgres.getCommentByThreadId('thread-1234');
+
+      // Assert
+      expect(comment).toEqual(
+        [{
+          id: 'comment-1234',
+          username: 'userComment',
+          created_at: '2023',
+          content: 'sebuah comment',
+          is_delete: false,
+        }],
+      );
+    });
+  });
+
   describe('verifyAvailableComment function', () => {
     it('should throw NotFoundError whent commentId not available', async () => {
       // Arrange

@@ -1,6 +1,4 @@
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
-const CommentToModel = require('../../../Domains/comments/entities/CommentToModel');
-const ReplyToModel = require('../../../Domains/replies/entities/ReplyToModel');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const GetThreadUseCase = require('../GetThreadUseCase');
@@ -14,7 +12,7 @@ describe('GetThreadUseCase', () => {
       id: 'thread-1234',
       title: 'sebuah title',
       body: 'sebuah body',
-      created_at: new Date().toISOString(),
+      created_at: '2023',
       username: 'my user',
     };
 
@@ -22,27 +20,30 @@ describe('GetThreadUseCase', () => {
       {
         id: 'comment-1234',
         username: 'dicoding',
-        created_at: '2023-03-04T14:30:58.819Z',
+        created_at: '2023',
         content: 'sebuah comment',
+        thread_id: 'thread-1234',
         is_delete: false,
       },
     ];
 
     const mockReplies = [
       {
-        id: 'reply-22HnFn-O3vYNXF72MIsj8',
+        id: 'reply-1313',
         username: 'johndoe',
-        created_at: '2023-03-04T14:31:13.935Z',
+        created_at: '2023',
         content: 'sebuah balasan',
         comment_id: 'comment-1234',
+        thread_id: 'thread-1234',
         is_delete: true,
       },
       {
-        id: 'reply-HzPGY838l2MlS4i7MaFdv',
+        id: 'reply-1212',
         username: 'dicoding',
-        created_at: '2023-03-04T14:31:18.569Z',
+        created_at: '2023',
         content: 'sebuah balasan',
         comment_id: 'comment-1234',
+        thread_id: 'thread-1234',
         is_delete: false,
       },
     ];
@@ -68,35 +69,39 @@ describe('GetThreadUseCase', () => {
     // Action
     const getThreadById = await getThreadUseCase.execute(threadId);
 
-    const comment = {
-      id: 'comment-1234',
-      username: 'dicoding',
-      created_at: '2023-03-04T14:30:58.819Z',
-      content: 'sebuah comment',
-      is_delete: false,
-    };
-
-    const reply = {
-      id: 'reply-HzPGY838l2MlS4i7MaFdv',
-      username: 'dicoding',
-      created_at: '2023-03-04T14:31:18.569Z',
-      content: 'sebuah balasan',
-      comment_id: 'comment-1234',
-      is_delete: false,
-    };
-
-    const replies = [];
-
-    if (comment.id === reply.comment_id) {
-      replies.push(reply);
-      expect(replies[0]).toEqual(reply);
-    }
-
     // Assert
+    expect(getThreadById).toEqual({
+      id: 'thread-1234',
+      title: 'sebuah title',
+      body: 'sebuah body',
+      date: '2023',
+      username: 'my user',
+      comments: [
+        {
+          id: 'comment-1234',
+          username: 'dicoding',
+          date: '2023',
+          replies: [
+            {
+              id: 'reply-1313',
+              content: '**balasan telah dihapus**',
+              date: '2023',
+              username: 'johndoe',
+            },
+            {
+              id: 'reply-1212',
+              content: 'sebuah balasan',
+              date: '2023',
+              username: 'dicoding',
+            },
+          ],
+          content: 'sebuah comment',
+        },
+      ],
+    });
     expect(mockThreadRepository.verifyAvailableThread).toBeCalledWith(threadId);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(threadId);
     expect(mockCommentRepository.getCommentByThreadId).toBeCalledWith(threadId);
     expect(mockReplyRepository.getReplyCommentByThreadId).toBeCalledWith(threadId);
-    expect(getThreadById).toBeDefined();
   });
 });

@@ -37,11 +37,11 @@ describe('ThreadsRepositoryPostgres', () => {
 
         // Assert
         expect(thread).toHaveLength(1);
-        expect(newAddedThread).toEqual(new NewAddedThread({
+        expect(newAddedThread).toEqual({
           id: 'thread-1234',
           title: 'ini title',
           owner: 'user-1234',
-        }));
+        });
       });
     });
   });
@@ -81,7 +81,13 @@ describe('ThreadsRepositoryPostgres', () => {
       const thread = await threadRepositoryPostgres.getThreadById(threadId);
 
       // Assert
-      expect(thread).toBeDefined();
+      expect(thread).toEqual({
+        id: 'thread-1234',
+        title: 'ini title',
+        body: 'ini body',
+        created_at: '2023',
+        username: 'userThread',
+      });
     });
   });
 });

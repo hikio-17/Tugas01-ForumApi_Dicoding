@@ -5,7 +5,7 @@ const ThreadsTableTestHelper = {
   async addThread(threadId, credentialId) {
     const title = 'ini title';
     const body = 'ini body';
-    const createdAt = new Date().toISOString();
+    const createdAt = '2023';
     const owner = credentialId;
 
     const query = {
